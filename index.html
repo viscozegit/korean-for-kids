@@ -590,65 +590,34 @@ function drawGuide() {
     guideCtx.stroke();
   });
 
-  // 체크포인트 점들 + 사이 화살표
+  // 체크포인트: 작은 색 점으로만 표시 (드래그 가능한 핸들처럼 보이지 않게)
   if (showArrows.checked && waypoints.length > 0) {
-    // 1) 체크포인트 사이 연결선 + 화살표 (같은 stroke 내부만)
-    waypoints.forEach((wp, idx) => {
-      const next = waypoints[idx + 1];
-      if (!next || next.strokeIdx !== wp.strokeIdx) return;
-      const isPassed = wp.hit && next.hit;
-      guideCtx.strokeStyle = isPassed ? '#86EFAC' : '#FCD34D';
-      guideCtx.lineWidth = w * 0.008;
-      guideCtx.setLineDash([w * 0.012, w * 0.012]);
-      guideCtx.beginPath();
-      guideCtx.moveTo(wp.x, wp.y);
-      guideCtx.lineTo(next.x, next.y);
-      guideCtx.stroke();
-      guideCtx.setLineDash([]);
-      // 중간에 작은 화살표
-      const mx = (wp.x + next.x) / 2;
-      const my = (wp.y + next.y) / 2;
-      drawArrowHead(guideCtx, wp.x, wp.y, mx, my, w * 0.022,
-        isPassed ? '#16A34A' : '#D97706');
-    });
-
-    // 2) 체크포인트 원
     waypoints.forEach((wp, idx) => {
       const isActive = idx === currentWpIdx && !allComplete;
-      const r = w * (isActive ? 0.042 : 0.028);
 
-      // 활성 점은 펄스 링
-      if (isActive) {
-        const pulse = (Math.sin(Date.now() / 250) + 1) / 2;  // 0~1
-        guideCtx.fillStyle = `rgba(249, 115, 22, ${0.2 + pulse * 0.2})`;
-        guideCtx.beginPath();
-        guideCtx.arc(wp.x, wp.y, r * (1.6 + pulse * 0.3), 0, Math.PI * 2);
-        guideCtx.fill();
-      }
-
-      guideCtx.fillStyle = wp.hit ? '#22C55E' : (isActive ? '#F97316' : '#FCD34D');
-      guideCtx.strokeStyle = 'white';
-      guideCtx.lineWidth = w * 0.006;
-      guideCtx.beginPath();
-      guideCtx.arc(wp.x, wp.y, r, 0, Math.PI * 2);
-      guideCtx.fill();
-      guideCtx.stroke();
-
-      // 각 stroke의 첫 점에는 번호 표시
       if (wp.isFirst) {
+        // 각 획의 시작 — 번호가 있는 작은 원
+        const r = w * 0.032;
+        guideCtx.fillStyle = wp.hit ? '#22C55E' : '#F97316';
+        guideCtx.strokeStyle = 'white';
+        guideCtx.lineWidth = w * 0.004;
+        guideCtx.beginPath();
+        guideCtx.arc(wp.x, wp.y, r, 0, Math.PI * 2);
+        guideCtx.fill();
+        guideCtx.stroke();
+
         guideCtx.fillStyle = 'white';
-        guideCtx.font = `bold ${w * 0.045}px sans-serif`;
+        guideCtx.font = `bold ${w * 0.038}px sans-serif`;
         guideCtx.textAlign = 'center';
         guideCtx.textBaseline = 'middle';
         guideCtx.fillText(wp.strokeIdx + 1, wp.x, wp.y);
-      }
-      // 통과한 점에 체크 표시
-      else if (wp.hit) {
-        guideCtx.fillStyle = 'white';
-        guideCtx.font = `bold ${w * 0.04}px sans-serif`;
-        guideCtx.textAlign = 'center';
-        guideCtx.textBaseline = 'middle';
-        guideCtx.fillText('✓', wp.x, wp.y);
+      } else {
+        // 중간 체크포인트 — 작은 점, 상태에 따라 색만 변경
+        const r = w * 0.013;
+        guideCtx.fillStyle = wp.hit ? '#22C55E' : (isActive ? '#F97316' : '#D97706');
+        guideCtx.beginPath();
+        guideCtx.arc(wp.x, wp.y, r, 0, Math.PI * 2);
+        guideCtx.fill();
       }
     });
   }
@@ -671,7 +640,7 @@ function redrawUserStrokes() {
   userCtx.clearRect(0, 0, w, h);
 
   userCtx.strokeStyle = '#3B82F6';
-  userCtx.lineWidth = w * 0.06;
+  userCtx.lineWidth = w * 0.14;  // 가이드(0.18)와 비슷한 두께
   userCtx.lineCap = 'round';
   userCtx.lineJoin = 'round';
 
@@ -797,15 +766,6 @@ document.getElementById('letter-picker').addEventListener('click', e => {
 
 showGuide.addEventListener('change', drawGuide);
 showArrows.addEventListener('change', drawGuide);
-
-// 활성 체크포인트 펄스 애니메이션
-function animatePulse() {
-  if (!allComplete && waypoints.length > 0 && showArrows.checked) {
-    drawGuide();
-  }
-  requestAnimationFrame(animatePulse);
-}
-requestAnimationFrame(animatePulse);
 
 window.addEventListener('resize', () => { resizeCanvas(); updateDiag(); });
 window.addEventListener('orientationchange', () => setTimeout(() => { resizeCanvas(); updateDiag(); }, 200));
