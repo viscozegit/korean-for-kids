@@ -407,6 +407,11 @@ let userStrokes = [];   // 사용자가 그린 모든 점들의 stroke 배열
 let currentStroke = []; // 현재 그리는 중인 stroke
 let isDrawing = false;
 
+// 체크포인트(웨이포인트) 시스템
+let waypoints = [];     // [{ x, y, hit, strokeIdx, idxInStroke, isFirst, isLast }]
+let currentWpIdx = 0;   // 다음에 통과해야 할 웨이포인트 인덱스
+let allComplete = false;
+
 // 각 글자의 획순 정의 (정규화 좌표 0~1)
 const LETTERS = {
   'ㄱ': {
@@ -450,6 +455,102 @@ const LETTERS = {
   }
 };
 
+// 정규화된 stroke 경로 위에서 비율 t (0~1)에 해당하는 점 반환
+function getPointOnPath(stroke, t) {
+  if (stroke.length === 1) return stroke[0];
+  const segLens = [];
+  let totalLen = 0;
+  for (let i = 1; i < stroke.length; i++) {
+    const len = Math.hypot(stroke[i][0]-stroke[i-1][0], stroke[i][1]-stroke[i-1][1]);
+    segLens.push(len);
+    totalLen += len;
+  }
+  if (totalLen === 0) return stroke[0];
+  const target = t * totalLen;
+  let acc = 0;
+  for (let i = 0; i < segLens.length; i++) {
+    if (acc + segLens[i] >= target) {
+      const localT = segLens[i] === 0 ? 0 : (target - acc) / segLens[i];
+      return [
+        stroke[i][0] + localT * (stroke[i+1][0] - stroke[i][0]),
+        stroke[i][1] + localT * (stroke[i+1][1] - stroke[i][1])
+      ];
+    }
+    acc += segLens[i];
+  }
+  return stroke[stroke.length - 1];
+}
+
+// 현재 글자의 모든 stroke에서 일정 간격마다 체크포인트 생성
+function rebuildWaypoints() {
+  waypoints = [];
+  currentWpIdx = 0;
+  allComplete = false;
+  const w = userCanvas.width / (window.devicePixelRatio || 1);
+  const h = userCanvas.height / (window.devicePixelRatio || 1);
+  if (w === 0 || h === 0) return;
+  const letter = LETTERS[currentLetter];
+  if (!letter) return;
+  const spacing = Math.min(w, h) * 0.13;  // 캔버스 짧은 변의 13% 간격
+  letter.strokes.forEach((stroke, strokeIdx) => {
+    let totalLen = 0;
+    for (let i = 1; i < stroke.length; i++) {
+      totalLen += Math.hypot(
+        (stroke[i][0]-stroke[i-1][0]) * w,
+        (stroke[i][1]-stroke[i-1][1]) * h
+      );
+    }
+    const numSegments = Math.max(3, Math.round(totalLen / spacing));
+    for (let i = 0; i <= numSegments; i++) {
+      const t = i / numSegments;
+      const [nx, ny] = getPointOnPath(stroke, t);
+      waypoints.push({
+        x: nx * w,
+        y: ny * h,
+        hit: false,
+        strokeIdx,
+        idxInStroke: i,
+        isFirst: i === 0,
+        isLast: i === numSegments
+      });
+    }
+  });
+}
+
+// 사용자 터치 위치가 현재(또는 가까운 미래) 웨이포인트를 통과하는지 체크
+function checkWaypointHit(px, py) {
+  if (allComplete || waypoints.length === 0) return;
+  const w = userCanvas.width / (window.devicePixelRatio || 1);
+  const hitRadius = Math.min(w, userCanvas.height / (window.devicePixelRatio || 1)) * 0.09;
+  // 빠른 스와이프 대비: 앞쪽 최대 3개까지 lookahead
+  const lookAhead = 3;
+  for (let k = 0; k < lookAhead && currentWpIdx + k < waypoints.length; k++) {
+    const wp = waypoints[currentWpIdx + k];
+    if (wp.hit) continue;
+    const d = Math.hypot(px - wp.x, py - wp.y);
+    if (d < hitRadius) {
+      // 이 점과 사이의 모든 점을 통과한 것으로 처리
+      for (let j = 0; j <= k; j++) {
+        if (waypoints[currentWpIdx + j]) waypoints[currentWpIdx + j].hit = true;
+      }
+      currentWpIdx += k + 1;
+      if (currentWpIdx >= waypoints.length) {
+        allComplete = true;
+        onAllComplete();
+      }
+      drawGuide();
+      return;
+    }
+  }
+}
+
+function onAllComplete() {
+  traceStatus.textContent = '✨ 잘 했어요! 모두 통과!';
+  traceStatus.classList.remove('fail');
+  if (autoSpeak.checked) speak('정말 잘 했어요');
+  canvasLog('모든 가이드 점 통과');
+}
+
 function resizeCanvas() {
   const rect = canvasWrap.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
@@ -458,6 +559,7 @@ function resizeCanvas() {
     c.height = rect.height * dpr;
     c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
   });
+  rebuildWaypoints();
   drawGuide();
   redrawUserStrokes();
 }
@@ -488,35 +590,73 @@ function drawGuide() {
     guideCtx.stroke();
   });
 
-  // 획순 화살표 + 번호
-  if (showArrows.checked) {
-    letter.strokes.forEach((stroke, idx) => {
-      const [sx, sy] = stroke[0];
-      const px = sx * w, py = sy * h;
-
-      // 시작 점 (번호 원)
-      guideCtx.fillStyle = '#FBBF24';
+  // 체크포인트 점들 + 사이 화살표
+  if (showArrows.checked && waypoints.length > 0) {
+    // 1) 체크포인트 사이 연결선 + 화살표 (같은 stroke 내부만)
+    waypoints.forEach((wp, idx) => {
+      const next = waypoints[idx + 1];
+      if (!next || next.strokeIdx !== wp.strokeIdx) return;
+      const isPassed = wp.hit && next.hit;
+      guideCtx.strokeStyle = isPassed ? '#86EFAC' : '#FCD34D';
+      guideCtx.lineWidth = w * 0.008;
+      guideCtx.setLineDash([w * 0.012, w * 0.012]);
       guideCtx.beginPath();
-      guideCtx.arc(px, py, w * 0.05, 0, Math.PI * 2);
+      guideCtx.moveTo(wp.x, wp.y);
+      guideCtx.lineTo(next.x, next.y);
+      guideCtx.stroke();
+      guideCtx.setLineDash([]);
+      // 중간에 작은 화살표
+      const mx = (wp.x + next.x) / 2;
+      const my = (wp.y + next.y) / 2;
+      drawArrowHead(guideCtx, wp.x, wp.y, mx, my, w * 0.022,
+        isPassed ? '#16A34A' : '#D97706');
+    });
+
+    // 2) 체크포인트 원
+    waypoints.forEach((wp, idx) => {
+      const isActive = idx === currentWpIdx && !allComplete;
+      const r = w * (isActive ? 0.042 : 0.028);
+
+      // 활성 점은 펄스 링
+      if (isActive) {
+        const pulse = (Math.sin(Date.now() / 250) + 1) / 2;  // 0~1
+        guideCtx.fillStyle = `rgba(249, 115, 22, ${0.2 + pulse * 0.2})`;
+        guideCtx.beginPath();
+        guideCtx.arc(wp.x, wp.y, r * (1.6 + pulse * 0.3), 0, Math.PI * 2);
+        guideCtx.fill();
+      }
+
+      guideCtx.fillStyle = wp.hit ? '#22C55E' : (isActive ? '#F97316' : '#FCD34D');
+      guideCtx.strokeStyle = 'white';
+      guideCtx.lineWidth = w * 0.006;
+      guideCtx.beginPath();
+      guideCtx.arc(wp.x, wp.y, r, 0, Math.PI * 2);
       guideCtx.fill();
+      guideCtx.stroke();
 
-      guideCtx.fillStyle = 'white';
-      guideCtx.font = `bold ${w * 0.06}px sans-serif`;
-      guideCtx.textAlign = 'center';
-      guideCtx.textBaseline = 'middle';
-      guideCtx.fillText(idx + 1, px, py);
-
-      // 끝 점 (화살표)
-      const last = stroke[stroke.length - 1];
-      const prev = stroke[stroke.length - 2];
-      drawArrowHead(guideCtx, prev[0]*w, prev[1]*h, last[0]*w, last[1]*h, w * 0.04);
+      // 각 stroke의 첫 점에는 번호 표시
+      if (wp.isFirst) {
+        guideCtx.fillStyle = 'white';
+        guideCtx.font = `bold ${w * 0.045}px sans-serif`;
+        guideCtx.textAlign = 'center';
+        guideCtx.textBaseline = 'middle';
+        guideCtx.fillText(wp.strokeIdx + 1, wp.x, wp.y);
+      }
+      // 통과한 점에 체크 표시
+      else if (wp.hit) {
+        guideCtx.fillStyle = 'white';
+        guideCtx.font = `bold ${w * 0.04}px sans-serif`;
+        guideCtx.textAlign = 'center';
+        guideCtx.textBaseline = 'middle';
+        guideCtx.fillText('✓', wp.x, wp.y);
+      }
     });
   }
 }
 
-function drawArrowHead(ctx, fromX, fromY, toX, toY, size) {
+function drawArrowHead(ctx, fromX, fromY, toX, toY, size, color) {
   const angle = Math.atan2(toY - fromY, toX - fromX);
-  ctx.fillStyle = '#D97706';
+  ctx.fillStyle = color || '#D97706';
   ctx.beginPath();
   ctx.moveTo(toX, toY);
   ctx.lineTo(toX - size * Math.cos(angle - Math.PI/6), toY - size * Math.sin(angle - Math.PI/6));
@@ -569,7 +709,9 @@ function startDraw(e) {
   e.preventDefault();
   e.stopPropagation();
   isDrawing = true;
-  currentStroke = [getEventPos(e)];
+  const pos = getEventPos(e);
+  currentStroke = [pos];
+  checkWaypointHit(pos.x, pos.y);
   touchCount++;
   updateDiag();
 }
@@ -577,7 +719,9 @@ function moveDraw(e) {
   e.preventDefault();
   e.stopPropagation();
   if (!isDrawing) return;
-  currentStroke.push(getEventPos(e));
+  const pos = getEventPos(e);
+  currentStroke.push(pos);
+  checkWaypointHit(pos.x, pos.y);
   redrawUserStrokes();
 }
 function endDraw(e) {
@@ -601,70 +745,35 @@ userCanvas.addEventListener('mouseleave', endDraw);
 function resetCanvas() {
   userStrokes = [];
   currentStroke = [];
+  rebuildWaypoints();
+  drawGuide();
   redrawUserStrokes();
-  traceStatus.textContent = '획순 가이드를 따라 손가락으로 그려보세요';
+  traceStatus.textContent = '주황색 점부터 순서대로 모두 통과해 보세요';
   traceStatus.classList.remove('fail');
-  canvasLog('초기화됨');
+  canvasLog('초기화됨 — 체크포인트 ' + waypoints.length + '개');
 }
 
 function evaluateTrace() {
-  if (userStrokes.length === 0) {
-    traceStatus.textContent = '아직 안 그렸어요';
-    traceStatus.classList.add('fail');
+  const total = waypoints.length;
+  const hits = waypoints.filter(wp => wp.hit).length;
+
+  if (total === 0) {
+    traceStatus.textContent = '글자를 먼저 선택해 주세요';
     return;
   }
 
-  // 단순 평가: 사용자가 그린 점들이 가이드 라인과 얼마나 가까운가
-  const w = userCanvas.width / (window.devicePixelRatio || 1);
-  const h = userCanvas.height / (window.devicePixelRatio || 1);
-  const letter = LETTERS[currentLetter];
-  const threshold = w * 0.1;  // 가이드 두께 절반 정도
-
-  let totalPoints = 0;
-  let onPathPoints = 0;
-
-  userStrokes.forEach(stroke => {
-    stroke.forEach(p => {
-      totalPoints++;
-      let minDist = Infinity;
-      letter.strokes.forEach(gStroke => {
-        for (let i = 0; i < gStroke.length - 1; i++) {
-          const [x1, y1] = gStroke[i];
-          const [x2, y2] = gStroke[i + 1];
-          const d = distToSegment(p.x, p.y, x1*w, y1*h, x2*w, y2*h);
-          if (d < minDist) minDist = d;
-        }
-      });
-      if (minDist < threshold) onPathPoints++;
-    });
-  });
-
-  const accuracy = totalPoints > 0 ? onPathPoints / totalPoints : 0;
-  const percent = Math.round(accuracy * 100);
-
-  if (accuracy >= 0.7) {
-    traceStatus.textContent = `✨ 잘 했어요! (정확도 ${percent}%)`;
+  if (allComplete) {
+    traceStatus.textContent = `✨ 모두 통과! (${hits}/${total})`;
     traceStatus.classList.remove('fail');
-    if (autoSpeak.checked) speak('잘 했어요');
-  } else if (accuracy >= 0.4) {
-    traceStatus.textContent = `좋아요! 한번 더 해볼까요? (${percent}%)`;
-    traceStatus.classList.remove('fail');
-    if (autoSpeak.checked) speak('한번 더 해볼까요');
+    if (autoSpeak.checked) speak('정말 잘 했어요');
+  } else if (hits === 0) {
+    traceStatus.textContent = '주황색 점부터 시작해 보세요';
+    traceStatus.classList.add('fail');
   } else {
-    traceStatus.textContent = `가이드를 따라 그려보세요 (${percent}%)`;
+    traceStatus.textContent = `${hits} / ${total} 통과 — 끝까지 따라가 봐요`;
     traceStatus.classList.add('fail');
   }
-
-  canvasLog(`평가: ${percent}% (${onPathPoints}/${totalPoints} 점이 가이드 위)`);
-}
-
-function distToSegment(px, py, x1, y1, x2, y2) {
-  const dx = x2 - x1, dy = y2 - y1;
-  const len2 = dx*dx + dy*dy;
-  if (len2 === 0) return Math.hypot(px - x1, py - y1);
-  let t = ((px - x1) * dx + (py - y1) * dy) / len2;
-  t = Math.max(0, Math.min(1, t));
-  return Math.hypot(px - (x1 + t*dx), py - (y1 + t*dy));
+  canvasLog(`평가: ${hits}/${total} 점 통과`);
 }
 
 function canvasLog(msg) {
@@ -688,6 +797,15 @@ document.getElementById('letter-picker').addEventListener('click', e => {
 
 showGuide.addEventListener('change', drawGuide);
 showArrows.addEventListener('change', drawGuide);
+
+// 활성 체크포인트 펄스 애니메이션
+function animatePulse() {
+  if (!allComplete && waypoints.length > 0 && showArrows.checked) {
+    drawGuide();
+  }
+  requestAnimationFrame(animatePulse);
+}
+requestAnimationFrame(animatePulse);
 
 window.addEventListener('resize', () => { resizeCanvas(); updateDiag(); });
 window.addEventListener('orientationchange', () => setTimeout(() => { resizeCanvas(); updateDiag(); }, 200));
