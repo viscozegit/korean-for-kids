@@ -590,15 +590,27 @@ function drawGuide() {
     guideCtx.stroke();
   });
 
-  // 체크포인트: 작은 색 점으로만 표시 (드래그 가능한 핸들처럼 보이지 않게)
+  // 체크포인트: 작은 색 점. 다음 통과해야 할 점은 후광으로 강조
   if (showArrows.checked && waypoints.length > 0) {
+    // 활성 점의 펄스 비율 (0~1)
+    const pulse = (Math.sin(Date.now() / 350) + 1) / 2;
+
     waypoints.forEach((wp, idx) => {
       const isActive = idx === currentWpIdx && !allComplete;
 
       if (wp.isFirst) {
         // 각 획의 시작 — 번호가 있는 작은 원
         const r = w * 0.032;
-        guideCtx.fillStyle = wp.hit ? '#22C55E' : '#F97316';
+
+        if (isActive) {
+          // 활성 후광 (펄스)
+          guideCtx.fillStyle = `rgba(249, 115, 22, ${0.25 + pulse * 0.25})`;
+          guideCtx.beginPath();
+          guideCtx.arc(wp.x, wp.y, r * (1.8 + pulse * 0.3), 0, Math.PI * 2);
+          guideCtx.fill();
+        }
+
+        guideCtx.fillStyle = wp.hit ? '#22C55E' : (isActive ? '#EA580C' : '#F97316');
         guideCtx.strokeStyle = 'white';
         guideCtx.lineWidth = w * 0.004;
         guideCtx.beginPath();
@@ -612,12 +624,31 @@ function drawGuide() {
         guideCtx.textBaseline = 'middle';
         guideCtx.fillText(wp.strokeIdx + 1, wp.x, wp.y);
       } else {
-        // 중간 체크포인트 — 작은 점, 상태에 따라 색만 변경
-        const r = w * 0.013;
-        guideCtx.fillStyle = wp.hit ? '#22C55E' : (isActive ? '#F97316' : '#D97706');
-        guideCtx.beginPath();
-        guideCtx.arc(wp.x, wp.y, r, 0, Math.PI * 2);
-        guideCtx.fill();
+        // 중간 체크포인트
+        const baseR = w * 0.013;
+
+        if (isActive) {
+          // 1) 흐린 후광 (펄스)
+          guideCtx.fillStyle = `rgba(249, 115, 22, ${0.25 + pulse * 0.3})`;
+          guideCtx.beginPath();
+          guideCtx.arc(wp.x, wp.y, baseR * (3.2 + pulse * 0.6), 0, Math.PI * 2);
+          guideCtx.fill();
+          // 2) 흰색 링
+          guideCtx.fillStyle = 'white';
+          guideCtx.beginPath();
+          guideCtx.arc(wp.x, wp.y, baseR * 2.2, 0, Math.PI * 2);
+          guideCtx.fill();
+          // 3) 채도 높은 주황 점
+          guideCtx.fillStyle = '#EA580C';
+          guideCtx.beginPath();
+          guideCtx.arc(wp.x, wp.y, baseR * 1.8, 0, Math.PI * 2);
+          guideCtx.fill();
+        } else {
+          guideCtx.fillStyle = wp.hit ? '#22C55E' : '#D97706';
+          guideCtx.beginPath();
+          guideCtx.arc(wp.x, wp.y, baseR, 0, Math.PI * 2);
+          guideCtx.fill();
+        }
       }
     });
   }
@@ -766,6 +797,15 @@ document.getElementById('letter-picker').addEventListener('click', e => {
 
 showGuide.addEventListener('change', drawGuide);
 showArrows.addEventListener('change', drawGuide);
+
+// 활성 체크포인트 후광 펄스 애니메이션 (할 점이 남아있을 때만)
+function animatePulse() {
+  if (!allComplete && waypoints.length > 0 && showArrows.checked && currentWpIdx < waypoints.length) {
+    drawGuide();
+  }
+  requestAnimationFrame(animatePulse);
+}
+requestAnimationFrame(animatePulse);
 
 window.addEventListener('resize', () => { resizeCanvas(); updateDiag(); });
 window.addEventListener('orientationchange', () => setTimeout(() => { resizeCanvas(); updateDiag(); }, 200));
