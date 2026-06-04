@@ -553,6 +553,195 @@ button {
 .reward-letter-card .L { font-size: 96px; line-height: 1; color: var(--text); }
 .reward-letter-card .W { font-size: 28px; }
 .reward-letter-card .E { font-size: 64px; line-height: 1; }
+
+/* ============ 단계 진행도 (홈) ============ */
+.stage-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 22px;
+}
+.s-dot {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  font-family: var(--font-ui);
+}
+.s-done { background: var(--good); color: white; box-shadow: 0 3px 0 #3e9d5b; }
+.s-now {
+  background: var(--primary-deep); color: white;
+  box-shadow: 0 3px 0 #c45e16;
+  transform: scale(1.15);
+  animation: bounce 1.4s ease-in-out infinite;
+}
+.s-todo { background: white; color: var(--muted); box-shadow: 0 3px 0 rgba(0,0,0,0.08); }
+@keyframes bounce {
+  0%, 100% { transform: scale(1.15) translateY(0); }
+  50% { transform: scale(1.15) translateY(-4px); }
+}
+
+/* ============ 오늘의 학습 카드 ============ */
+.today-card {
+  display: block;
+  max-width: 520px;
+  width: 92%;
+  margin: 0 auto 16px;
+  padding: 36px 28px;
+  border-radius: 36px;
+  background: linear-gradient(135deg, #FFF1A8 0%, #FFB42B 100%);
+  box-shadow: 0 10px 0 #E5A91A, 0 16px 36px rgba(0,0,0,0.1);
+  text-align: center;
+  transform: rotate(-1deg);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.today-card:active {
+  transform: translateY(6px) rotate(0deg);
+  box-shadow: 0 4px 0 #E5A91A;
+}
+.today-card.today-done {
+  background: linear-gradient(135deg, #DAF5E0 0%, #5BCE7E 100%);
+  box-shadow: 0 10px 0 #3e9d5b, 0 16px 36px rgba(0,0,0,0.1);
+}
+.today-emoji {
+  font-size: 80px;
+  line-height: 1;
+  animation: floaty 3s ease-in-out infinite alternate;
+}
+.today-stage-label {
+  display: inline-block;
+  background: white;
+  color: var(--primary-deep);
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-size: 22px;
+  margin-top: 10px;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.1);
+}
+.today-title {
+  font-size: 32px;
+  margin-top: 14px;
+  color: var(--text);
+}
+.today-sub {
+  font-size: 28px;
+  margin-top: 8px;
+  color: var(--text);
+  letter-spacing: 6px;
+}
+
+/* ============ 단계 인트로 ============ */
+.stage-intro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 16px;
+  text-align: center;
+}
+.stage-intro-num {
+  background: var(--primary-deep);
+  color: white;
+  font-size: 42px;
+  padding: 14px 36px;
+  border-radius: 999px;
+  box-shadow: 0 8px 0 #c45e16;
+  animation: bouncyIn 0.6s ease-out;
+}
+.stage-intro-title {
+  font-size: 28px;
+  color: var(--muted);
+}
+.stage-intro-letters {
+  font-size: clamp(72px, 18vw, 130px);
+  line-height: 1;
+  color: var(--text);
+  background: white;
+  border-radius: 36px;
+  padding: 18px 36px;
+  box-shadow: 0 10px 0 rgba(0,0,0,0.08), 0 16px 32px rgba(0,0,0,0.08);
+  letter-spacing: 8px;
+  transform: rotate(-1deg);
+}
+.stage-intro-emojis {
+  font-size: 48px;
+  letter-spacing: 10px;
+}
+.big-start-btn {
+  background: var(--primary-deep);
+  color: white;
+  font-size: 28px;
+  padding: 22px 48px;
+  border-radius: 999px;
+  box-shadow: 0 8px 0 #c45e16;
+  transition: transform 0.1s, box-shadow 0.1s;
+  margin-top: 8px;
+}
+.big-start-btn:active {
+  transform: translateY(6px);
+  box-shadow: 0 2px 0 #c45e16;
+}
+
+/* ============ 단계 진행 바 (학습 화면 상단) ============ */
+.stage-bar {
+  flex: 1;
+  height: 18px;
+  background: white;
+  border-radius: 999px;
+  position: relative;
+  margin: 0 14px;
+  box-shadow: inset 0 2px 0 rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+.stage-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-deep) 100%);
+  border-radius: 999px;
+  transition: width 0.3s;
+}
+.stage-bar-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--text);
+  font-family: var(--font-ui);
+}
+
+/* ============ 복습 배지 ============ */
+.review-badge {
+  background: var(--sky);
+  color: white;
+  font-size: 22px;
+  padding: 8px 22px;
+  border-radius: 999px;
+  box-shadow: 0 4px 0 #5DA3D0;
+  transform: rotate(-2deg);
+}
+
+/* ============ 단계 완료 화면 ============ */
+.stage-done-letters {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.stage-done-card {
+  background: white;
+  border-radius: 24px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.08);
+  text-align: center;
+  transform: rotate(-2deg);
+}
+.stage-done-card:nth-child(even) { transform: rotate(2deg); background: #FFF1A8; }
+.stage-done-card .L { font-size: 56px; line-height: 1; }
+.stage-done-card .E { font-size: 32px; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -713,16 +902,102 @@ function letterType(letter) {
 }
 
 // ===================================================================
+// 커리큘럼: 10단계
+// ===================================================================
+const CURRICULUM = [
+  { num: 1,  newLetters: ['ㅇ', 'ㅣ', 'ㅡ'] },
+  { num: 2,  newLetters: ['ㄱ', 'ㅏ'] },
+  { num: 3,  newLetters: ['ㄴ', 'ㅗ'] },
+  { num: 4,  newLetters: ['ㄷ', 'ㅓ'] },
+  { num: 5,  newLetters: ['ㅁ', 'ㅜ'] },
+  { num: 6,  newLetters: ['ㅂ', 'ㅑ'] },
+  { num: 7,  newLetters: ['ㅅ', 'ㅕ'] },
+  { num: 8,  newLetters: ['ㅎ', 'ㅛ'] },
+  { num: 9,  newLetters: ['ㄹ', 'ㅠ', 'ㅈ'] },
+  { num: 10, newLetters: ['ㅊ', 'ㅋ', 'ㅌ', 'ㅍ'] }
+];
+const TOTAL_STAGES = CURRICULUM.length;
+
+function stageData(num) { return CURRICULUM[num - 1]; }
+
+function previousLetters(stageNum) {
+  return CURRICULUM.slice(0, stageNum - 1).flatMap(s => s.newLetters);
+}
+
+// 단계의 활동 목록 빌드 (배운 글자들 복습 섞어서)
+function buildStageActivities(stageNum) {
+  const stage = stageData(stageNum);
+  if (!stage) return [];
+  const prev = previousLetters(stageNum);
+  const reviewPool = shuffle([...prev]);
+  let reviewCursor = 0;
+  const acts = [];
+
+  stage.newLetters.forEach(letter => {
+    // 새 순서: 먼저 따라쓰기 → 발음 → 퀴즈
+    acts.push({ type: 'trace', letter });
+    acts.push({ type: 'recognize', letter });
+    acts.push({ type: 'quiz', letter });
+    // 새 글자 직후 이전 글자 복습 2개 (있다면)
+    if (reviewPool.length > 0) {
+      for (let i = 0; i < 2 && reviewPool.length > 0; i++) {
+        const rl = reviewPool[(reviewCursor++) % reviewPool.length];
+        acts.push({ type: 'review', letter: rl });
+      }
+    }
+  });
+
+  // 마무리 복습: 새 글자 + 이전 글자 섞어서 3개
+  const all = [...prev, ...stage.newLetters];
+  shuffle([...all]).slice(0, Math.min(3, all.length)).forEach(rl => {
+    acts.push({ type: 'review', letter: rl });
+  });
+
+  return acts;
+}
+
+// ===================================================================
 // 진도 저장 (localStorage)
 // ===================================================================
 const PROGRESS_KEY = 'hangul-progress-v1';
 
 function loadProgress() {
-  try {
-    return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || { letters: {}, stars: 0, last: null };
-  } catch {
-    return { letters: {}, stars: 0, last: null };
-  }
+  let p;
+  try { p = JSON.parse(localStorage.getItem(PROGRESS_KEY)); } catch {}
+  if (!p) p = {};
+  p.letters = p.letters || {};
+  p.stars = p.stars || 0;
+  p.last = p.last || null;
+  p.currentStage = p.currentStage || 1;
+  p.completedStages = p.completedStages || [];
+  p.stageProgress = p.stageProgress || null;  // { num, idx } 진행 중인 단계
+  return p;
+}
+
+function setCurrentStage(num) {
+  const p = loadProgress();
+  p.currentStage = Math.min(TOTAL_STAGES, Math.max(1, num));
+  saveProgress(p);
+}
+
+function markStageCompleted(num) {
+  const p = loadProgress();
+  if (!p.completedStages.includes(num)) p.completedStages.push(num);
+  p.currentStage = Math.min(TOTAL_STAGES, num + 1);
+  p.stageProgress = null;
+  saveProgress(p);
+}
+
+function saveStageProgress(num, idx) {
+  const p = loadProgress();
+  p.stageProgress = { num, idx };
+  saveProgress(p);
+}
+
+function clearStageProgress() {
+  const p = loadProgress();
+  p.stageProgress = null;
+  saveProgress(p);
 }
 
 function saveProgress(p) {
@@ -782,6 +1057,66 @@ document.addEventListener('touchstart', wakeAudio, { once: true });
 document.addEventListener('mousedown', wakeAudio, { once: true });
 
 // ===================================================================
+// 단계 진행 엔진 (stage runner)
+// ===================================================================
+let _stage = null;  // { num, activities, idx }
+
+function startStage(num, resumeIdx) {
+  const acts = buildStageActivities(num);
+  _stage = { num, activities: acts, idx: resumeIdx || 0 };
+  saveStageProgress(num, _stage.idx);
+  runCurrentActivity();
+}
+
+function runCurrentActivity() {
+  if (!_stage) return;
+  const app = document.getElementById('app');
+  if (_stage.idx >= _stage.activities.length) {
+    completeCurrentStage();
+    return;
+  }
+  saveStageProgress(_stage.num, _stage.idx);
+  const act = _stage.activities[_stage.idx];
+  const data = getLetterData(act.letter);
+  if (!data) { nextActivity(); return; }
+  app.innerHTML = '';
+  const opts = {
+    inStage: true,
+    stageNum: _stage.num,
+    activityIdx: _stage.idx,
+    totalActivities: _stage.activities.length,
+    onNext: nextActivity,
+    isReview: act.type === 'review'
+  };
+  if (act.type === 'trace') renderLearnStage2(app, data, opts);
+  else if (act.type === 'recognize') renderLearnStage1(app, data, opts);
+  else if (act.type === 'quiz' || act.type === 'review') renderLearnStage3(app, data, opts);
+  else nextActivity();
+}
+
+function nextActivity() {
+  if (!_stage) return;
+  _stage.idx++;
+  runCurrentActivity();
+}
+
+function completeCurrentStage() {
+  const num = _stage ? _stage.num : null;
+  _stage = null;
+  if (num) {
+    markStageCompleted(num);
+    navigate('/stage-complete/' + num);
+  } else {
+    navigate('/home');
+  }
+}
+
+function exitStage() {
+  _stage = null;
+  navigate('/home');
+}
+
+// ===================================================================
 // 라우터
 // ===================================================================
 function navigate(path) { location.hash = '#' + path; }
@@ -798,12 +1133,16 @@ function route() {
   const [view, ...params] = getRoute();
   const app = document.getElementById('app');
   app.innerHTML = '';
+  // 단계 외부로 나가면 stage runner 중단
+  if (view !== 'stage' && view !== 'stage-complete') _stage = null;
   switch (view) {
-    case 'home':       return renderHome(app);
-    case 'grid':       return renderGrid(app, params[0] || 'consonant');
-    case 'learn':      return renderLearn(app, params[0], parseInt(params[1] || '1'));
-    case 'reward':     return renderReward(app, params[0]);
-    default:           navigate('/home');
+    case 'home':            return renderHome(app);
+    case 'grid':            return renderGrid(app, params[0] || 'consonant');
+    case 'learn':           return renderLearn(app, params[0], parseInt(params[1] || '1'));
+    case 'reward':          return renderReward(app, params[0]);
+    case 'stage':           return renderStageIntro(app, parseInt(params[0]));
+    case 'stage-complete':  return renderStageComplete(app, parseInt(params[0]));
+    default:                navigate('/home');
   }
 }
 
@@ -816,8 +1155,19 @@ window.addEventListener('DOMContentLoaded', route);
 function renderHome(app) {
   const p = loadProgress();
   const totalStars = p.stars || 0;
-  const lastLetter = p.last;
-  const lastData = lastLetter ? getLetterData(lastLetter) : null;
+  const currentNum = Math.min(TOTAL_STAGES, p.currentStage);
+  const allDone = p.completedStages.length >= TOTAL_STAGES;
+  const stage = stageData(currentNum);
+  const inProgress = p.stageProgress && p.stageProgress.num === currentNum;
+  const newLettersStr = stage ? stage.newLetters.join(' ') : '';
+
+  // 진행도 점 10개
+  const dots = Array.from({length: TOTAL_STAGES}, (_, i) => {
+    const n = i + 1;
+    if (p.completedStages.includes(n)) return '<span class="s-dot s-done">✓</span>';
+    if (n === currentNum && !allDone) return '<span class="s-dot s-now">' + n + '</span>';
+    return '<span class="s-dot s-todo">' + n + '</span>';
+  }).join('');
 
   const screen = document.createElement('div');
   screen.className = 'screen';
@@ -827,19 +1177,23 @@ function renderHome(app) {
       <div class="stars-display">⭐ ${totalStars}</div>
     </div>
     <h1 class="home-greet">안녕! 오늘도 같이 놀자</h1>
-    <div class="home-cards">
-      <button class="home-card" data-go="/grid/consonant">
-        <div class="home-card-emoji">🐯</div>
-        <div class="home-card-title">자음 배우기</div>
-        <div class="home-card-sub">ㄱ ㄴ ㄷ ㄹ …</div>
+
+    <div class="stage-progress">${dots}</div>
+
+    ${allDone ? `
+      <button class="today-card today-done" data-go="/stage/1">
+        <div class="today-emoji">🏆</div>
+        <div class="today-title">전부 다 배웠어요!</div>
+        <div class="today-sub">처음부터 다시 해볼까?</div>
       </button>
-      <button class="home-card" data-go="/grid/vowel">
-        <div class="home-card-emoji">🦊</div>
-        <div class="home-card-title">모음 배우기</div>
-        <div class="home-card-sub">ㅏ ㅑ ㅓ ㅕ …</div>
+    ` : `
+      <button class="today-card" data-go="/stage/${currentNum}">
+        <div class="today-emoji">🎯</div>
+        <div class="today-stage-label">${currentNum}단계</div>
+        <div class="today-title">${inProgress ? '이어서 하기' : '시작하기'}</div>
+        <div class="today-sub">${newLettersStr}</div>
       </button>
-    </div>
-    ${lastData ? `<button class="continue-btn" data-go="/learn/${lastLetter}/1">🎁 이어서 하기 (${lastData.letter})</button>` : ''}
+    `}
   `;
   screen.querySelectorAll('[data-go]').forEach(b => {
     b.addEventListener('click', () => navigate(b.dataset.go));
@@ -893,20 +1247,23 @@ function renderLearn(app, letter, stage) {
   const data = getLetterData(letter);
   if (!data) { navigate('/home'); return; }
   stage = Math.max(1, Math.min(3, stage));
-
-  if (stage === 1) renderLearnStage1(app, data);
-  else if (stage === 2) renderLearnStage2(app, data);
-  else renderLearnStage3(app, data);
+  // 새 순서: 1=따라쓰기, 2=발음, 3=퀴즈
+  if (stage === 1) renderLearnStage2(app, data);       // trace
+  else if (stage === 2) renderLearnStage1(app, data);  // recognize
+  else renderLearnStage3(app, data);                   // quiz
 }
 
-function makeLearnTopbar(data, stage) {
-  const gridPath = '/grid/' + letterType(data.letter);
+function makeLearnTopbar(data, step, opts) {
+  const inStage = opts && opts.inStage;
+  const backPath = inStage ? '/home' : '/grid/' + letterType(data.letter);
+  const pct = inStage ? Math.round(((opts.activityIdx + 1) / opts.totalActivities) * 100) : 0;
+  const middle = inStage
+    ? `<div class="stage-bar"><div class="stage-bar-fill" style="width:${pct}%"></div><div class="stage-bar-label">${opts.activityIdx + 1} / ${opts.totalActivities}</div></div>`
+    : `<div class="progress-dots">${[1,2,3].map(s => `<div class="progress-dot ${s===step?'active':s<step?'done':''}"></div>`).join('')}</div>`;
   return `
     <div class="topbar">
-      <button class="back-btn" data-go="${gridPath}">←</button>
-      <div class="progress-dots">
-        ${[1,2,3].map(s => `<div class="progress-dot ${s===stage?'active':s<stage?'done':''}"></div>`).join('')}
-      </div>
+      <button class="back-btn" data-go="${backPath}">←</button>
+      ${middle}
       <button class="home-btn" data-go="/home">🏠</button>
     </div>
   `;
@@ -915,11 +1272,11 @@ function makeLearnTopbar(data, stage) {
 // ===================================================================
 // 학습 1단계: 보고 듣기
 // ===================================================================
-function renderLearnStage1(app, data) {
+function renderLearnStage1(app, data, opts = {}) {
   const screen = document.createElement('div');
   screen.className = 'screen';
   screen.innerHTML = `
-    ${makeLearnTopbar(data, 1)}
+    ${makeLearnTopbar(data, 2, opts)}
     <div class="recognize-wrap">
       <div class="big-letter" id="big-letter">${data.letter}</div>
       <div class="letter-pronounce">${data.name}</div>
@@ -929,7 +1286,7 @@ function renderLearnStage1(app, data) {
       </div>
       <div class="row">
         <button class="replay-btn" id="replay-btn">🔊 다시 듣기</button>
-        <button class="next-btn" data-go="/learn/${data.letter}/2">따라쓰기 →</button>
+        <button class="next-btn" id="next-btn">퀴즈 →</button>
       </div>
     </div>
   `;
@@ -937,6 +1294,11 @@ function renderLearnStage1(app, data) {
   screen.querySelector('#big-letter').addEventListener('click', () => speak(data.name));
   screen.querySelector('#assoc').addEventListener('click', () => speak(data.word));
   screen.querySelector('#replay-btn').addEventListener('click', () => playSequence(data));
+  screen.querySelector('#next-btn').addEventListener('click', () => {
+    markStageComplete(data.letter, 1);
+    if (opts.onNext) opts.onNext();
+    else navigate('/learn/' + data.letter + '/3');
+  });
   app.appendChild(screen);
 
   // 자동 재생
@@ -950,25 +1312,29 @@ function playSequence(data) {
 // ===================================================================
 // 학습 2단계: 따라쓰기 (체크포인트 시스템)
 // ===================================================================
-function renderLearnStage2(app, data) {
+function renderLearnStage2(app, data, opts = {}) {
   const screen = document.createElement('div');
   screen.className = 'screen';
   screen.innerHTML = `
-    ${makeLearnTopbar(data, 2)}
+    ${makeLearnTopbar(data, 1, opts)}
     <div class="trace-wrap">
-      <div class="trace-hint">주황색 점부터 순서대로 따라 그려요</div>
+      <div class="trace-hint">이 모양을 손가락으로 따라 그려봐요</div>
       <div class="canvas-wrap" id="canvas-wrap">
         <canvas id="guide-canvas"></canvas>
         <canvas id="user-canvas"></canvas>
       </div>
-      <div class="trace-status pending" id="trace-status">손가락으로 따라 그려보세요</div>
+      <div class="trace-status pending" id="trace-status">주황색 점부터 순서대로 통과해 봐요</div>
       <div class="row">
         <button class="replay-btn" id="reset-btn">↻ 다시</button>
-        <button class="next-btn" id="next-btn" style="display:none" data-go="/learn/${data.letter}/3">퀴즈로 →</button>
+        <button class="next-btn" id="next-btn" style="display:none">발음 듣기 →</button>
       </div>
     </div>
   `;
   screen.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => navigate(b.dataset.go)));
+  screen.querySelector('#next-btn').addEventListener('click', () => {
+    if (opts.onNext) opts.onNext();
+    else navigate('/learn/' + data.letter + '/2');
+  });
   app.appendChild(screen);
 
   initTracing(data, screen);
@@ -1220,8 +1586,7 @@ function initTracing(data, screen) {
     nextBtn.style.display = 'none';
   });
 
-  // 학습 1단계 완료로 인정 (들어왔으니)
-  markStageComplete(data.letter, 1);
+  // 따라쓰기 진입은 별 부여 안 함 (실제 완성 시 onComplete에서 부여)
 
   // 펄스 애니메이션
   function tick() {
@@ -1249,18 +1614,20 @@ function initTracing(data, screen) {
 // ===================================================================
 // 학습 3단계: 미니 퀴즈
 // ===================================================================
-function renderLearnStage3(app, data) {
+function renderLearnStage3(app, data, opts = {}) {
   // 같은 set(자음 vs 모음) 내에서만 distractor 뽑기
   const sameSet = letterSet(data.letter);
   const others = sameSet.filter(c => c.letter !== data.letter);
   const distractors = shuffle(others).slice(0, 2);
   const choices = shuffle([data, ...distractors]);
+  const isReview = opts.isReview;
 
   const screen = document.createElement('div');
   screen.className = 'screen';
   screen.innerHTML = `
-    ${makeLearnTopbar(data, 3)}
+    ${makeLearnTopbar(data, 3, opts)}
     <div class="quiz-wrap">
+      ${isReview ? `<div class="review-badge">🔄 복습</div>` : ''}
       <div class="quiz-prompt">🔊 <b>${data.name}</b> 은 어디에 있을까?</div>
       <div class="quiz-options">
         ${choices.map(c => `<button class="quiz-option" data-letter="${c.letter}">${c.letter}</button>`).join('')}
@@ -1275,8 +1642,11 @@ function renderLearnStage3(app, data) {
       if (b.dataset.letter === data.letter) {
         b.style.background = '#86EFAC';
         speak('잘 했어요');
-        markStageComplete(data.letter, 3);
-        setTimeout(() => navigate('/reward/' + data.letter), 800);
+        if (!isReview) markStageComplete(data.letter, 3);
+        setTimeout(() => {
+          if (opts.onNext) opts.onNext();
+          else navigate('/reward/' + data.letter);
+        }, 800);
       } else {
         b.classList.add('wrong');
         speak('다시 해볼까');
@@ -1296,6 +1666,82 @@ function shuffle(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+// ===================================================================
+// 뷰: 단계 인트로
+// ===================================================================
+function renderStageIntro(app, num) {
+  const stage = stageData(num);
+  if (!stage) { navigate('/home'); return; }
+  const p = loadProgress();
+  const resumeIdx = (p.stageProgress && p.stageProgress.num === num) ? p.stageProgress.idx : 0;
+  const newEmojis = stage.newLetters.map(l => getLetterData(l)?.emoji || '').join(' ');
+
+  const screen = document.createElement('div');
+  screen.className = 'screen';
+  screen.innerHTML = `
+    <div class="topbar">
+      <button class="back-btn" data-go="/home">← 홈</button>
+      <div class="stars-display">⭐ ${p.stars}</div>
+    </div>
+    <div class="stage-intro">
+      <div class="stage-intro-num">${num}단계</div>
+      <div class="stage-intro-title">${resumeIdx > 0 ? '이어서 할까요?' : '오늘 배울 글자'}</div>
+      <div class="stage-intro-letters">${stage.newLetters.join('  ')}</div>
+      <div class="stage-intro-emojis">${newEmojis}</div>
+      <button class="big-start-btn" id="start-btn">${resumeIdx > 0 ? '이어서 하기 →' : '시작! →'}</button>
+    </div>
+  `;
+  screen.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => navigate(b.dataset.go)));
+  screen.querySelector('#start-btn').addEventListener('click', () => {
+    startStage(num, resumeIdx);
+  });
+  app.appendChild(screen);
+
+  // 인트로 음성: "N단계, ㄱ과 ㅏ 배워요"
+  setTimeout(() => {
+    const names = stage.newLetters.map(l => getLetterData(l)?.name).filter(Boolean).join(', ');
+    speak(`${num}단계. ${names}, 배워볼까요`);
+  }, 400);
+}
+
+// ===================================================================
+// 뷰: 단계 완료
+// ===================================================================
+function renderStageComplete(app, num) {
+  const stage = stageData(num);
+  if (!stage) { navigate('/home'); return; }
+  const p = loadProgress();
+  const nextNum = num + 1;
+  const hasNext = nextNum <= TOTAL_STAGES;
+
+  const screen = document.createElement('div');
+  screen.className = 'screen';
+  screen.innerHTML = `
+    <div class="topbar">
+      <div></div>
+      <div class="stars-display">⭐ ${p.stars}</div>
+    </div>
+    <div class="reward-wrap">
+      <div class="reward-title">${num}단계 완료! 🎉</div>
+      <div class="reward-stars">⭐ ⭐ ⭐</div>
+      <div class="stage-done-letters">
+        ${stage.newLetters.map(l => {
+          const d = getLetterData(l);
+          return `<div class="stage-done-card"><div class="L">${l}</div><div class="E">${d?.emoji||''}</div></div>`;
+        }).join('')}
+      </div>
+      <div class="row">
+        <button class="replay-btn" data-go="/home">🏠 홈으로</button>
+        ${hasNext ? `<button class="next-btn" data-go="/stage/${nextNum}">다음 단계 →</button>` : ''}
+      </div>
+    </div>
+  `;
+  screen.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => navigate(b.dataset.go)));
+  app.appendChild(screen);
+
+  setTimeout(() => speak(num === TOTAL_STAGES ? '모두 다 배웠어요. 정말 멋져요' : `${num}단계 완료. 정말 잘 했어요`), 400);
 }
 
 // ===================================================================
