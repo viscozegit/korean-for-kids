@@ -8,9 +8,9 @@ GitHub Pages 활성화 후: `https://viscozegit.github.io/korean-for-kids/`
 
 ## 현재 상태
 
-**1단계 MVP**: 홈 → 자음 14자 그리드 → 3단계 학습(보고 듣기 / 따라 쓰기 / 미니 퀴즈) → 보상. 진도는 localStorage에 자동 저장.
+**MVP**: 홈 → 자음 14자 / 모음 10자 그리드 → 3단계 학습(보고 듣기 / 따라 쓰기 / 미니 퀴즈) → 보상. 진도는 localStorage에 자동 저장.
 
-**다음 단계 예정**: 모음 10자, 부모 메뉴, 스티커 컬렉션, 빈 데이터/UI 다듬기.
+**다음 단계 예정**: 부모 메뉴, 스티커 컬렉션, UI 다듬기.
 
 - 메인 앱: [`/`](https://viscozegit.github.io/korean-for-kids/) (index.html)
 - 핵심 기술 검증 페이지: [`/test.html`](https://viscozegit.github.io/korean-for-kids/test.html) — TTS 음성 목록 확인, 트레이싱 디버그용

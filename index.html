@@ -641,8 +641,75 @@ const CONSONANTS = [
     ] }
 ];
 
+// ===================================================================
+// 데이터: 모음 10자
+// ===================================================================
+const VOWELS = [
+  { letter: 'ㅏ', name: '아', word: '아이스크림', emoji: '🍦',
+    strokes: [
+      [[0.4, 0.15], [0.4, 0.85]],
+      [[0.4, 0.5], [0.75, 0.5]]
+    ] },
+  { letter: 'ㅑ', name: '야', word: '야구공', emoji: '⚾',
+    strokes: [
+      [[0.4, 0.15], [0.4, 0.85]],
+      [[0.4, 0.35], [0.75, 0.35]],
+      [[0.4, 0.62], [0.75, 0.62]]
+    ] },
+  { letter: 'ㅓ', name: '어', word: '어항', emoji: '🐠',
+    strokes: [
+      [[0.25, 0.5], [0.6, 0.5]],
+      [[0.6, 0.15], [0.6, 0.85]]
+    ] },
+  { letter: 'ㅕ', name: '여', word: '여우', emoji: '🦊',
+    strokes: [
+      [[0.25, 0.35], [0.6, 0.35]],
+      [[0.25, 0.62], [0.6, 0.62]],
+      [[0.6, 0.15], [0.6, 0.85]]
+    ] },
+  { letter: 'ㅗ', name: '오', word: '오이', emoji: '🥒',
+    strokes: [
+      [[0.5, 0.25], [0.5, 0.6]],
+      [[0.2, 0.6], [0.8, 0.6]]
+    ] },
+  { letter: 'ㅛ', name: '요', word: '요요', emoji: '🪀',
+    strokes: [
+      [[0.35, 0.25], [0.35, 0.6]],
+      [[0.65, 0.25], [0.65, 0.6]],
+      [[0.2, 0.6], [0.8, 0.6]]
+    ] },
+  { letter: 'ㅜ', name: '우', word: '우산', emoji: '☂️',
+    strokes: [
+      [[0.2, 0.4], [0.8, 0.4]],
+      [[0.5, 0.4], [0.5, 0.75]]
+    ] },
+  { letter: 'ㅠ', name: '유', word: '유리병', emoji: '🍶',
+    strokes: [
+      [[0.2, 0.4], [0.8, 0.4]],
+      [[0.35, 0.4], [0.35, 0.75]],
+      [[0.65, 0.4], [0.65, 0.75]]
+    ] },
+  { letter: 'ㅡ', name: '으', word: '음식', emoji: '🍙',
+    strokes: [
+      [[0.2, 0.5], [0.8, 0.5]]
+    ] },
+  { letter: 'ㅣ', name: '이', word: '이불', emoji: '🛏️',
+    strokes: [
+      [[0.5, 0.15], [0.5, 0.85]]
+    ] }
+];
+
 function getLetterData(letter) {
-  return CONSONANTS.find(c => c.letter === letter);
+  return CONSONANTS.find(c => c.letter === letter)
+      || VOWELS.find(v => v.letter === letter);
+}
+
+function letterSet(letter) {
+  return VOWELS.some(v => v.letter === letter) ? VOWELS : CONSONANTS;
+}
+
+function letterType(letter) {
+  return VOWELS.some(v => v.letter === letter) ? 'vowel' : 'consonant';
 }
 
 // ===================================================================
@@ -766,20 +833,16 @@ function renderHome(app) {
         <div class="home-card-title">자음 배우기</div>
         <div class="home-card-sub">ㄱ ㄴ ㄷ ㄹ …</div>
       </button>
-      <button class="home-card disabled" data-go="/grid/vowel">
-        <div class="home-card-emoji">🦋</div>
+      <button class="home-card" data-go="/grid/vowel">
+        <div class="home-card-emoji">🦊</div>
         <div class="home-card-title">모음 배우기</div>
-        <div class="home-card-sub">곧 추가될 예정 🌱</div>
+        <div class="home-card-sub">ㅏ ㅑ ㅓ ㅕ …</div>
       </button>
     </div>
     ${lastData ? `<button class="continue-btn" data-go="/learn/${lastLetter}/1">🎁 이어서 하기 (${lastData.letter})</button>` : ''}
   `;
   screen.querySelectorAll('[data-go]').forEach(b => {
-    if (b.classList.contains('disabled')) {
-      b.addEventListener('click', () => speak('모음은 곧 추가될 예정이에요'));
-    } else {
-      b.addEventListener('click', () => navigate(b.dataset.go));
-    }
+    b.addEventListener('click', () => navigate(b.dataset.go));
   });
   app.appendChild(screen);
 }
@@ -788,10 +851,12 @@ function renderHome(app) {
 // 뷰: 자모 그리드
 // ===================================================================
 function renderGrid(app, type) {
-  if (type !== 'consonant') {
+  if (type !== 'consonant' && type !== 'vowel') {
     navigate('/home');
     return;
   }
+  const list = type === 'vowel' ? VOWELS : CONSONANTS;
+  const title = type === 'vowel' ? '모음을 배워볼까?' : '자음을 배워볼까?';
   const screen = document.createElement('div');
   screen.className = 'screen';
   screen.innerHTML = `
@@ -799,9 +864,9 @@ function renderGrid(app, type) {
       <button class="back-btn" data-go="/home">← 홈</button>
       <div class="stars-display">⭐ ${loadProgress().stars || 0}</div>
     </div>
-    <h2 class="grid-title">어떤 글자를 배워볼까?</h2>
+    <h2 class="grid-title">${title}</h2>
     <div class="letter-grid">
-      ${CONSONANTS.map(c => {
+      ${list.map(c => {
         const stars = getLetterStars(c.letter);
         const complete = stars >= 3;
         return `
@@ -835,9 +900,10 @@ function renderLearn(app, letter, stage) {
 }
 
 function makeLearnTopbar(data, stage) {
+  const gridPath = '/grid/' + letterType(data.letter);
   return `
     <div class="topbar">
-      <button class="back-btn" data-go="/grid/consonant">←</button>
+      <button class="back-btn" data-go="${gridPath}">←</button>
       <div class="progress-dots">
         ${[1,2,3].map(s => `<div class="progress-dot ${s===stage?'active':s<stage?'done':''}"></div>`).join('')}
       </div>
@@ -1184,8 +1250,9 @@ function initTracing(data, screen) {
 // 학습 3단계: 미니 퀴즈
 // ===================================================================
 function renderLearnStage3(app, data) {
-  // 같은 글자 + 다른 2~3개 자음을 랜덤 distractor로
-  const others = CONSONANTS.filter(c => c.letter !== data.letter);
+  // 같은 set(자음 vs 모음) 내에서만 distractor 뽑기
+  const sameSet = letterSet(data.letter);
+  const others = sameSet.filter(c => c.letter !== data.letter);
   const distractors = shuffle(others).slice(0, 2);
   const choices = shuffle([data, ...distractors]);
 
@@ -1264,8 +1331,9 @@ function renderReward(app, letter) {
   `;
   screen.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => navigate(b.dataset.go)));
   screen.querySelector('#next-letter').addEventListener('click', () => {
-    const idx = CONSONANTS.findIndex(c => c.letter === letter);
-    const next = CONSONANTS[(idx + 1) % CONSONANTS.length];
+    const list = letterSet(letter);
+    const idx = list.findIndex(c => c.letter === letter);
+    const next = list[(idx + 1) % list.length];
     navigate('/learn/' + next.letter + '/1');
   });
   app.appendChild(screen);
