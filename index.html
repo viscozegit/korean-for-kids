@@ -568,7 +568,9 @@ document.addEventListener('mousedown', wakeAudio, { once: true });
 function navigate(path) { location.hash = '#' + path; }
 
 function getRoute() {
-  const hash = location.hash.replace(/^#/, '') || '/home';
+  let hash = location.hash.replace(/^#/, '') || '/home';
+  // Safari가 한국어를 자동으로 URL 인코딩하므로 디코딩 필요
+  try { hash = decodeURIComponent(hash); } catch {}
   const parts = hash.split('/').filter(Boolean);
   return parts;  // 예: ['learn', 'ㄱ', '2']
 }
